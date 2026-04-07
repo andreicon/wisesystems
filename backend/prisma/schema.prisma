@@ -1,0 +1,45 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+generator pothos {
+  provider          = "prisma-pothos-types"
+  clientOutput      = "@prisma/client"
+  generateDatamodel = "true"
+}
+
+datasource db {
+  provider   = "postgresql"
+}
+
+model User {
+  id             String   @id @default(uuid())
+  email          String   @unique
+  password       String
+  fname           String?
+  lname           String?
+  
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+  
+  todos          Todo[]
+
+  @@map("users")
+}
+
+model Todo {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  completed   Boolean  @default(false)
+  owner_id    String
+  
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+  
+  owner       User     @relation(fields: [owner_id], references: [id])
+  
+  @@map("todos")
+}
+

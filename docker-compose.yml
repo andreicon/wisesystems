@@ -1,0 +1,41 @@
+services:
+  frontend:
+    image: node:24-alpine
+    volumes:
+      - ./frontend:/app
+    working_dir: /app
+    command: sh -c "npm install && npm run dev"
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+
+  backend:
+    image: node:24-alpine
+    volumes:
+      - ./backend:/app
+    working_dir: /app
+    command: sh -c "npm install && npx prisma generate && npx tsx watch src/index.ts"
+    env_file: ./backend/.env
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:18.3
+    environment:
+      POSTGRES_DB: wisesystems
+      POSTGRES_USER: wisesystems
+      POSTGRES_PASSWORD: wisesystems_dev
+    volumes:
+      - pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U wisesystems"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  pgdata:
